@@ -27,6 +27,7 @@ function handleEvent(event) {
     return Promise.resolve(null);
   }
 
+  // 見積もりフロー（ステップ1:工事種別選択、Flexメッセージ）
   if (event.message.text.includes('見積もり')) {
     return client.replyMessage(event.replyToken, {
       type: 'flex',
@@ -61,7 +62,7 @@ function handleEvent(event) {
                 {
                   type: 'button',
                   style: 'primary',
-                  color: '#06C755', // LINEグリーン
+                  color: '#06C755',
                   height: 'md',
                   action: { type: 'message', label: 'エアコン設置・交換', text: 'エアコン設置・交換' }
                 },
@@ -96,7 +97,7 @@ function handleEvent(event) {
                 {
                   type: 'button',
                   style: 'secondary',
-                  color: '#FFFFFF', // 白ボタン（その他）
+                  color: '#FFFFFF',
                   height: 'md',
                   action: { type: 'message', label: 'その他', text: 'その他' }
                 }
@@ -112,9 +113,79 @@ function handleEvent(event) {
       }
     });
   }
-  
 
-  // 追加の分岐やフローはここに書き足していく！
+  // ステップ2: 「エアコン設置・交換」選択時の詳細フロー
+  if (event.message.text === 'エアコン設置・交換') {
+    return client.replyMessage(event.replyToken, {
+      type: 'flex',
+      altText: '設置・交換内容を選択してください',
+      contents: {
+        type: 'bubble',
+        size: 'mega',
+        body: {
+          type: 'box',
+          layout: 'vertical',
+          paddingAll: '20px',
+          contents: [
+            {
+              type: 'text',
+              text: '内容を選択してください',
+              weight: 'bold',
+              size: 'md',
+              color: '#222',
+              align: 'center',
+              margin: 'md'
+            },
+            {
+              type: 'separator',
+              margin: 'md'
+            },
+            {
+              type: 'box',
+              layout: 'vertical',
+              spacing: 'md',
+              margin: 'lg',
+              contents: [
+                {
+                  type: 'button',
+                  style: 'primary',
+                  color: '#06C755',
+                  action: { type: 'message', label: '新設工事', text: 'エアコン新設工事' }
+                },
+                {
+                  type: 'button',
+                  style: 'primary',
+                  color: '#06C755',
+                  action: { type: 'message', label: '引越し工事', text: 'エアコン引越し工事' }
+                }
+              ]
+            }
+          ]
+        },
+        styles: {
+          body: { backgroundColor: "#FFFFFF" }
+        }
+      }
+    });
+  }
+
+  // 「エアコン新設工事」→本体有無を質問
+  if (event.message.text === 'エアコン新設工事') {
+    return client.replyMessage(event.replyToken, {
+      type: 'text',
+      text: 'エアコン本体をお持ちですか？\n「はい」「いいえ」でお答えください。'
+    });
+  }
+
+  // 「エアコン引越し工事」→取り外し台数を質問
+  if (event.message.text === 'エアコン引越し工事') {
+    return client.replyMessage(event.replyToken, {
+      type: 'text',
+      text: '取り外し台数を数字で入力してください。'
+    });
+  }
+
+  // 以降、各質問に応じてさらに詳細な質問・保存処理も追記可能です
 
   // その他のメッセージは「リッチメニューから『見積もり』を押してください」と案内
   return client.replyMessage(event.replyToken, {
