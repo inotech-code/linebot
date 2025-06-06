@@ -27,64 +27,92 @@ function handleEvent(event) {
     return Promise.resolve(null);
   }
 
-  // 「見積もり」を含むテキストに反応（部分一致/Flex Messageで縦型ボタン表示）
   if (event.message.text.includes('見積もり')) {
     return client.replyMessage(event.replyToken, {
       type: 'flex',
       altText: 'どの工事をご希望ですか？',
       contents: {
         type: 'bubble',
+        size: 'mega',
         body: {
           type: 'box',
           layout: 'vertical',
+          paddingAll: '20px',
           contents: [
             {
               type: 'text',
               text: 'どの工事をご希望ですか？',
               weight: 'bold',
               size: 'lg',
+              color: '#222',
+              align: 'center',
               margin: 'md'
             },
             {
-              type: 'button',
-              style: 'primary',
-              color: '#1976D2',
-              action: { type: 'message', label: 'エアコン設置・交換', text: 'エアコン設置・交換' }
+              type: 'separator',
+              margin: 'md'
             },
             {
-              type: 'button',
-              style: 'primary',
-              color: '#388E3C',
-              action: { type: 'message', label: 'エアコン分解洗浄', text: 'エアコン分解洗浄' }
-            },
-            {
-              type: 'button',
-              style: 'primary',
-              color: '#FBC02D',
-              action: { type: 'message', label: '電気工事', text: '電気工事' }
-            },
-            {
-              type: 'button',
-              style: 'primary',
-              color: '#0288D1',
-              action: { type: 'message', label: 'LAN工事・ネットワーク', text: 'LAN工事・ネットワーク' }
-            },
-            {
-              type: 'button',
-              style: 'primary',
-              color: '#8D6E63',
-              action: { type: 'message', label: '定期点検・保守', text: '定期点検・保守' }
-            },
-            {
-              type: 'button',
-              style: 'secondary',
-              action: { type: 'message', label: 'その他', text: 'その他' }
+              type: 'box',
+              layout: 'vertical',
+              spacing: 'md',
+              margin: 'lg',
+              contents: [
+                {
+                  type: 'button',
+                  style: 'primary',
+                  color: '#06C755', // LINEグリーン
+                  height: 'md',
+                  action: { type: 'message', label: 'エアコン設置・交換', text: 'エアコン設置・交換' }
+                },
+                {
+                  type: 'button',
+                  style: 'primary',
+                  color: '#06C755',
+                  height: 'md',
+                  action: { type: 'message', label: 'エアコン分解洗浄', text: 'エアコン分解洗浄' }
+                },
+                {
+                  type: 'button',
+                  style: 'primary',
+                  color: '#06C755',
+                  height: 'md',
+                  action: { type: 'message', label: '電気工事', text: '電気工事' }
+                },
+                {
+                  type: 'button',
+                  style: 'primary',
+                  color: '#06C755',
+                  height: 'md',
+                  action: { type: 'message', label: 'LAN工事・ネットワーク', text: 'LAN工事・ネットワーク' }
+                },
+                {
+                  type: 'button',
+                  style: 'primary',
+                  color: '#06C755',
+                  height: 'md',
+                  action: { type: 'message', label: '定期点検・保守', text: '定期点検・保守' }
+                },
+                {
+                  type: 'button',
+                  style: 'secondary',
+                  color: '#FFFFFF', // 白ボタン（その他）
+                  height: 'md',
+                  action: { type: 'message', label: 'その他', text: 'その他' }
+                }
+              ]
             }
           ]
+        },
+        styles: {
+          body: {
+            backgroundColor: "#FFFFFF",
+          }
         }
       }
     });
   }
+  
 
   // 追加の分岐やフローはここに書き足していく！
 
