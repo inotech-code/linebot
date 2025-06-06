@@ -40,7 +40,7 @@ function handleEvent(event) {
               text: 'どの工事をご希望ですか？',
               weight: 'bold',
               size: 'lg',
-              color: '#222',
+              color: '#222', // ← これは"button"ではなく"text"だがOK
               align: 'center',
               margin: 'md'
             },
@@ -54,11 +54,11 @@ function handleEvent(event) {
               spacing: 'md',
               margin: 'lg',
               contents: [
-                // LINE公式グリーン
+                // 公式LINEグリーン
                 {
                   type: 'button',
                   style: 'primary',
-                  color: '#06C755',
+                  color: '#06C755', // ここだけOK
                   height: 'md',
                   action: { type: 'message', label: 'エアコン設置・交換', text: 'エアコン設置・交換' }
                 },
@@ -90,7 +90,7 @@ function handleEvent(event) {
                   height: 'md',
                   action: { type: 'message', label: '定期点検・保守', text: '定期点検・保守' }
                 },
-                // その他は白ボタン
+                // secondaryは色指定禁止（省略すること！）
                 {
                   type: 'button',
                   style: 'secondary',
@@ -103,7 +103,7 @@ function handleEvent(event) {
         },
         styles: {
           body: {
-            backgroundColor: "#FFFFFF",
+            backgroundColor: "#FFFFFF"
           }
         }
       }
