@@ -62,42 +62,36 @@ function handleEvent(event) {
                 {
                   type: 'button',
                   style: 'primary',
-                  color: '#06C755',
                   height: 'md',
                   action: { type: 'message', label: 'エアコン設置・交換', text: 'エアコン設置・交換' }
                 },
                 {
                   type: 'button',
                   style: 'primary',
-                  color: '#06C755',
                   height: 'md',
                   action: { type: 'message', label: 'エアコン分解洗浄', text: 'エアコン分解洗浄' }
                 },
                 {
                   type: 'button',
                   style: 'primary',
-                  color: '#06C755',
                   height: 'md',
                   action: { type: 'message', label: '電気工事', text: '電気工事' }
                 },
                 {
                   type: 'button',
                   style: 'primary',
-                  color: '#06C755',
                   height: 'md',
                   action: { type: 'message', label: 'LAN工事・ネットワーク', text: 'LAN工事・ネットワーク' }
                 },
                 {
                   type: 'button',
                   style: 'primary',
-                  color: '#06C755',
                   height: 'md',
                   action: { type: 'message', label: '定期点検・保守', text: '定期点検・保守' }
                 },
                 {
                   type: 'button',
                   style: 'secondary',
-                  color: '#FFFFFF',
                   height: 'md',
                   action: { type: 'message', label: 'その他', text: 'その他' }
                 }
@@ -107,12 +101,13 @@ function handleEvent(event) {
         },
         styles: {
           body: {
-            backgroundColor: "#FFFFFF",
+            backgroundColor: "#FFFFFF"
           }
         }
       }
     });
   }
+  
 
   // ステップ2: 「エアコン設置・交換」選択時の詳細フロー
   if (event.message.text === 'エアコン設置・交換') {
@@ -149,13 +144,13 @@ function handleEvent(event) {
                 {
                   type: 'button',
                   style: 'primary',
-                  color: '#06C755',
+                  height: 'md',
                   action: { type: 'message', label: '新設工事', text: 'エアコン新設工事' }
                 },
                 {
                   type: 'button',
                   style: 'primary',
-                  color: '#06C755',
+                  height: 'md',
                   action: { type: 'message', label: '引越し工事', text: 'エアコン引越し工事' }
                 }
               ]
