@@ -23,7 +23,10 @@ function handleEvent(event) {
     return Promise.resolve(null);
   }
 
-  if (event.message.text.includes('見積もり')) {
+  const text = event.message.text;
+
+  // ステップ1: 見積もりフロー開始
+  if (text.includes('見積もり')) {
     return client.replyMessage(event.replyToken, {
       type: 'flex',
       altText: 'どの工事をご希望ですか？',
@@ -40,7 +43,7 @@ function handleEvent(event) {
               text: 'どの工事をご希望ですか？',
               weight: 'bold',
               size: 'lg',
-              color: '#222222', // ★6桁HEX
+              color: '#222222',
               align: 'center',
               margin: 'md'
             },
@@ -105,6 +108,81 @@ function handleEvent(event) {
           }
         }
       }
+    });
+  }
+
+  // ステップ2: エアコン設置・交換を選んだ場合
+  if (text === 'エアコン設置・交換') {
+    return client.replyMessage(event.replyToken, {
+      type: 'flex',
+      altText: '設置・交換内容を選択してください',
+      contents: {
+        type: 'bubble',
+        size: 'mega',
+        body: {
+          type: 'box',
+          layout: 'vertical',
+          paddingAll: '20px',
+          contents: [
+            {
+              type: 'text',
+              text: '内容を選択してください',
+              weight: 'bold',
+              size: 'md',
+              color: '#222222',
+              align: 'center',
+              margin: 'md'
+            },
+            {
+              type: 'separator',
+              margin: 'md'
+            },
+            {
+              type: 'box',
+              layout: 'vertical',
+              spacing: 'md',
+              margin: 'lg',
+              contents: [
+                {
+                  type: 'button',
+                  style: 'primary',
+                  color: '#06C755',
+                  height: 'md',
+                  action: { type: 'message', label: '新設工事', text: 'エアコン新設工事' }
+                },
+                {
+                  type: 'button',
+                  style: 'primary',
+                  color: '#06C755',
+                  height: 'md',
+                  action: { type: 'message', label: '引越し工事', text: 'エアコン引越し工事' }
+                }
+              ]
+            }
+          ]
+        },
+        styles: {
+          body: {
+            backgroundColor: "#FFFFFF"
+          }
+        }
+      }
+    });
+  }
+
+  // ステップ3: 新設工事→本体有無を質問
+  if (text === 'エアコン新設工事') {
+    return client.replyMessage(event.replyToken, {
+      type: 'text',
+      text: 'エアコン本体をお持ちですか？\n「はい」または「いいえ」でご回答ください。'
+    });
+  }
+
+  // ステップ3: 引越し工事→台数を質問
+  if (text === 'エアコン引越し工事') {
+    return client.replyMessage(event.replyToken, {
+      type: 'text',
+      text: '取り外し台数を数字で入力してください。'
     });
   }
 
