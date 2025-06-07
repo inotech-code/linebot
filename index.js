@@ -170,7 +170,6 @@ async function handleEvent(event) {
     });
   }
 
-  // --- 定期点検・保守：エアコンの点検なら施工日入力
   if (text === 'エアコンの保守点検') {
     setSession(userId, 'checkType', 'エアコン点検');
     setSession(userId, 'waiting', 'ac-check-date');
@@ -179,7 +178,6 @@ async function handleEvent(event) {
       text: 'いつ頃工事されたエアコンですか？\n（例：2022年8月頃、去年の春ごろ等）'
     });
   }
-  // --- 定期点検・保守：その他はフリーワード
   if (text === '点検その他') {
     setSession(userId, 'checkType', 'その他点検');
     setSession(userId, 'waiting', 'other-check');
@@ -188,8 +186,6 @@ async function handleEvent(event) {
       text: 'ご希望の点検内容を入力してください。'
     });
   }
-
-  // --- 定期点検・保守のフリーワード受信後、連絡メッセージ送信
   if (getSession(userId, 'waiting') === 'ac-check-date') {
     setSession(userId, 'acCheckDate', text);
     resetSession(userId);
@@ -223,6 +219,195 @@ async function handleEvent(event) {
       text: '内容を承りました。担当者からご連絡いたします。'
     });
   }
+
+  // ------------------------ ★ ここから分解洗浄フロー ★ ------------------------
+  if (text === 'エアコン分解洗浄') {
+    setSession(userId, 'workType', 'エアコン分解洗浄');
+    setSession(userId, 'waiting', 'ac-wash-count');
+    // 洗浄台数選択
+    return client.replyMessage(event.replyToken, {
+      type: 'flex',
+      altText: '洗浄台数を選択してください',
+      contents: {
+        type: 'bubble',
+        size: 'mega',
+        body: {
+          type: 'box',
+          layout: 'vertical',
+          paddingAll: '20px',
+          contents: [
+            {
+              type: 'text',
+              text: '洗浄台数を選択してください',
+              weight: 'bold',
+              size: 'md',
+              color: '#222222',
+              align: 'center',
+              margin: 'md'
+            },
+            { type: 'separator', margin: 'md' },
+            {
+              type: 'box',
+              layout: 'vertical',
+              spacing: 'md',
+              margin: 'lg',
+              contents: [
+                ...Array.from({length: 10}, (_, i) => ({
+                  type: 'button',
+                  style: 'primary',
+                  color: '#06C755',
+                  height: 'md',
+                  action: { type: 'message', label: `${i+1}台`, text: `洗浄${i+1}台` }
+                }))
+              ]
+            }
+          ]
+        },
+        styles: { body: { backgroundColor: "#FFFFFF" } }
+      }
+    });
+  }
+
+  // 洗浄台数選択後→お掃除機能質問
+  if (/^洗浄(\d+)台$/.test(text) && getSession(userId, 'waiting') === 'ac-wash-count') {
+    const n = Number(text.match(/^洗浄(\d+)台$/)[1]);
+    setSession(userId, 'acWashCount', n);
+    setSession(userId, 'waiting', 'ac-wash-osouji');
+    return client.replyMessage(event.replyToken, {
+      type: 'flex',
+      altText: 'お掃除機能の有無',
+      contents: {
+        type: 'bubble',
+        size: 'mega',
+        body: {
+          type: 'box',
+          layout: 'vertical',
+          paddingAll: '20px',
+          contents: [
+            {
+              type: 'text',
+              text: 'お掃除機能はついていますか？',
+              weight: 'bold',
+              size: 'md',
+              color: '#222222',
+              align: 'center',
+              margin: 'md'
+            },
+            { type: 'separator', margin: 'md' },
+            {
+              type: 'box',
+              layout: 'vertical',
+              spacing: 'md',
+              margin: 'lg',
+              contents: [
+                {
+                  type: 'button',
+                  style: 'primary',
+                  color: '#06C755',
+                  height: 'md',
+                  action: { type: 'message', label: 'はい', text: 'お掃除機能はい' }
+                },
+                {
+                  type: 'button',
+                  style: 'primary',
+                  color: '#06C755',
+                  height: 'md',
+                  action: { type: 'message', label: 'いいえ', text: 'お掃除機能いいえ' }
+                },
+                {
+                  type: 'button',
+                  style: 'primary',
+                  color: '#06C755',
+                  height: 'md',
+                  action: { type: 'message', label: 'わからない', text: 'お掃除機能わからない' }
+                }
+              ]
+            }
+          ]
+        },
+        styles: { body: { backgroundColor: "#FFFFFF" } }
+      }
+    });
+  }
+
+  // お掃除機能「はい」→台数選択
+  if (text === 'お掃除機能はい' && getSession(userId, 'waiting') === 'ac-wash-osouji') {
+    const total = getSession(userId, 'acWashCount') || 1;
+    setSession(userId, 'waiting', 'ac-wash-osouji-count');
+    return client.replyMessage(event.replyToken, {
+      type: 'flex',
+      altText: 'お掃除機能付き台数',
+      contents: {
+        type: 'bubble',
+        size: 'mega',
+        body: {
+          type: 'box',
+          layout: 'vertical',
+          paddingAll: '20px',
+          contents: [
+            {
+              type: 'text',
+              text: 'お掃除機能付き台数を選択してください',
+              weight: 'bold',
+              size: 'md',
+              color: '#222222',
+              align: 'center',
+              margin: 'md'
+            },
+            { type: 'separator', margin: 'md' },
+            {
+              type: 'box',
+              layout: 'vertical',
+              spacing: 'md',
+              margin: 'lg',
+              contents: [
+                ...Array.from({length: total}, (_, i) => ({
+                  type: 'button',
+                  style: 'primary',
+                  color: '#06C755',
+                  height: 'md',
+                  action: { type: 'message', label: `${i+1}台`, text: `お掃除機能付き${i+1}台` }
+                }))
+              ]
+            }
+          ]
+        },
+        styles: { body: { backgroundColor: "#FFFFFF" } }
+      }
+    });
+  }
+
+  // お掃除機能付き台数 → 最終確認
+  if (/^お掃除機能付き(\d+)台$/.test(text) && getSession(userId, 'waiting') === 'ac-wash-osouji-count') {
+    const osoujiCount = Number(text.match(/^お掃除機能付き(\d+)台$/)[1]);
+    setSession(userId, 'acOsoujiCount', osoujiCount);
+    setSession(userId, 'waiting', null);
+    return await showSummary(userId, event.replyToken);
+  }
+
+  // お掃除機能「いいえ」→最終確認
+  if (text === 'お掃除機能いいえ' && getSession(userId, 'waiting') === 'ac-wash-osouji') {
+    setSession(userId, 'acOsoujiCount', 0);
+    setSession(userId, 'waiting', null);
+    return await showSummary(userId, event.replyToken);
+  }
+
+  // お掃除機能「わからない」→品番入力
+  if (text === 'お掃除機能わからない' && getSession(userId, 'waiting') === 'ac-wash-osouji') {
+    setSession(userId, 'waiting', 'ac-wash-hinban');
+    return client.replyMessage(event.replyToken, {
+      type: 'text',
+      text: 'エアコンの品番を入力してください。'
+    });
+  }
+
+  // 品番入力後→最終確認
+  if (getSession(userId, 'waiting') === 'ac-wash-hinban') {
+    setSession(userId, 'acHinban', text);
+    setSession(userId, 'waiting', null);
+    return await showSummary(userId, event.replyToken);
+  }
+  // ------------------------ ★ ここまで分解洗浄フロー ★ ------------------------
 
   // ---- ステップ2: 工事内容詳細 ----
   if (text === 'エアコン設置・交換') {
@@ -273,10 +458,8 @@ async function handleEvent(event) {
     });
   }
 
-  // --- 以降「エアコン設置・交換」の詳細フローは従来通り ---
-  // 新設工事、引越し工事、最終確認までのロジックは**元コードのまま**（上記やりとりで確認済み）
+  // 以降（設置・引越し）は元コードのまま
 
-  // ---- 新設工事 ----
   if (text === 'エアコン新設工事') {
     setSession(userId, 'workDetail', '新設工事');
     return client.replyMessage(event.replyToken, {
@@ -432,7 +615,6 @@ async function handleEvent(event) {
     return await showSummary(userId, event.replyToken);
   }
 
-  // ---- 引越し工事 ----
   if (text === 'エアコン引越し工事') {
     setSession(userId, 'workDetail', '引越し工事');
     return client.replyMessage(event.replyToken, {
@@ -618,16 +800,33 @@ async function showSummary(userId, replyToken) {
   const remainAction = getSession(userId, 'remainAction');
   const unitArrange = getSession(userId, 'unitArrange');
 
+  // --- 分解洗浄 専用 ---
+  const acWashCount = getSession(userId, 'acWashCount');
+  const acOsoujiCount = getSession(userId, 'acOsoujiCount');
+  const acHinban = getSession(userId, 'acHinban');
+
   let summary = `【見積もり内容】
 工事種別：${workType}
-内容：${workDetail}
 `;
-  if (hasUnit) summary += `本体：${hasUnit === 'あり' ? 'あり' : 'なし'}\n`;
-  if (unitArrange) summary += `本体手配：${unitArrange}\n`;
-  if (removeCount) summary += `取り外し台数：${removeCount}台\n`;
-  if (installCount) summary += `取り付け台数：${installCount}台\n`;
-  if (remainCount) summary += `余剰台数：${remainCount}台\n`;
-  if (remainAction) summary += `余剰対応：${remainAction}\n`;
+  if (workType === 'エアコン分解洗浄') {
+    if (acWashCount) {
+      if (acOsoujiCount != null) {
+        const normal = acWashCount - acOsoujiCount;
+        if (normal > 0) summary += `普通洗浄：${normal}台\n`;
+        if (acOsoujiCount > 0) summary += `お掃除機能付き：${acOsoujiCount}台\n`;
+      }
+      if (acHinban) summary += `品番：${acHinban}\n`;
+      if (acWashCount && acOsoujiCount == null && !acHinban) summary += `洗浄台数：${acWashCount}台\n`;
+    }
+  } else {
+    if (workDetail) summary += `内容：${workDetail}\n`;
+    if (hasUnit) summary += `本体：${hasUnit === 'あり' ? 'あり' : 'なし'}\n`;
+    if (unitArrange) summary += `本体手配：${unitArrange}\n`;
+    if (removeCount) summary += `取り外し台数：${removeCount}台\n`;
+    if (installCount) summary += `取り付け台数：${installCount}台\n`;
+    if (remainCount) summary += `余剰台数：${remainCount}台\n`;
+    if (remainAction) summary += `余剰対応：${remainAction}\n`;
+  }
 
   return client.replyMessage(replyToken, {
     type: 'flex',
