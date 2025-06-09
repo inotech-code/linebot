@@ -43,6 +43,60 @@ async function handleEvent(event) {
   const text = event.message.text;
   const userId = getUserId(event);
 
+  // --- 相談・電話で相談（リッチメニューやボタンのtextとして届く想定） ---
+  if (text === '相談') {
+    return client.replyMessage(event.replyToken, {
+      type: 'text',
+      text: '担当者からご連絡いたします。'
+    });
+  }
+  if (text === '電話で相談') {
+    return client.replyMessage(event.replyToken, {
+      type: 'flex',
+      altText: 'お電話でのご相談',
+      contents: {
+        type: 'bubble',
+        size: 'mega',
+        body: {
+          type: 'box',
+          layout: 'vertical',
+          paddingAll: '20px',
+          contents: [
+            {
+              type: 'text',
+              text: 'お電話でご相談',
+              weight: 'bold',
+              size: 'md',
+              color: '#222222',
+              align: 'center',
+              margin: 'md'
+            },
+            { type: 'separator', margin: 'md' },
+            {
+              type: 'text',
+              text: '下のボタンからお電話できます',
+              size: 'sm',
+              color: '#333333',
+              margin: 'md'
+            },
+            {
+              type: 'button',
+              style: 'primary',
+              color: '#06C755',
+              margin: 'lg',
+              action: {
+                type: 'uri',
+                label: '電話をかける',
+                uri: 'tel:09020104780'
+              }
+            }
+          ]
+        },
+        styles: { body: { backgroundColor: "#FFFFFF" } }
+      }
+    });
+  }
+
   // ---- ステップ1: 工事種別選択（初期化） ----
   if (text.includes('見積もり')) {
     resetSession(userId);
