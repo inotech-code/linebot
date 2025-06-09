@@ -43,7 +43,7 @@ async function handleEvent(event) {
   const text = event.message.text;
   const userId = getUserId(event);
 
-  // --- 相談・電話で相談（リッチメニューやボタンのtextとして届く想定） ---
+  // ====================== 相談・電話で相談：必ず最優先 ======================
   if (text === '相談') {
     return client.replyMessage(event.replyToken, {
       type: 'text',
@@ -96,6 +96,7 @@ async function handleEvent(event) {
       }
     });
   }
+  // ====================================================================
 
   // ---- ステップ1: 工事種別選択（初期化） ----
   if (text.includes('見積もり')) {
