@@ -27,6 +27,17 @@ function getSession(userId, key) {
   return sessions[userId] ? sessions[userId][key] : undefined;
 }
 
+// メッセージ/ポストバック両対応
+function getTextFromEvent(event) {
+  if (event.type === 'message' && event.message.type === 'text') {
+    return event.message.text.trim();
+  }
+  if (event.type === 'postback') {
+    return (event.postback.data || '').trim();
+  }
+  return '';
+}
+
 app.post('/webhook', line.middleware(config), (req, res) => {
   Promise
     .all(req.body.events.map(handleEvent))
@@ -36,11 +47,9 @@ app.post('/webhook', line.middleware(config), (req, res) => {
 const client = new line.Client(config);
 
 async function handleEvent(event) {
-  if (event.type !== 'message' || event.message.type !== 'text') {
-    return Promise.resolve(null);
-  }
-
-  const text = event.message.text;
+  // message も postback も吸収して "text" 扱いに
+  const text = getTextFromEvent(event);
+  if (!text) return Promise.resolve(null);
   const userId = getUserId(event);
 
   // ====================== 相談・電話で相談：必ず最優先 ======================
@@ -840,7 +849,7 @@ async function handleEvent(event) {
   // --- その他案内 ---
   return client.replyMessage(event.replyToken, {
     type: 'text',
-    text: '見積もりをご希望の方は、リッチメニューから「見積もり」を押してください。'
+    text: 'メニューからご要望をお選びください。'
   });
 }
 
