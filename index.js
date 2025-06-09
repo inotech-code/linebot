@@ -27,13 +27,14 @@ function getSession(userId, key) {
   return sessions[userId] ? sessions[userId][key] : undefined;
 }
 
-// メッセージ/ポストバック両対応
+// メッセージ/ポストバック両対応（displayText対応に修正）
 function getTextFromEvent(event) {
   if (event.type === 'message' && event.message.type === 'text') {
     return event.message.text;
   }
   if (event.type === 'postback') {
-    return event.postback.data || '';
+    const { data = '', displayText = '' } = event.postback || {};
+    return data || displayText;  // ★ 修正：data が空なら displayText
   }
   return '';
 }
@@ -41,8 +42,8 @@ function getTextFromEvent(event) {
 // === 追加：normalize（全角/半角スペースや改行を消す）関数 ===
 function normalizeText(text) {
   return (text || '')
-    .replace(/[\s\u3000\r\n]/g, '') // 半角・全角スペース、改行削除
-    .toLowerCase(); // 小文字化（念のため）
+    .replace(/[\s\u3000\r\n]/g, '')
+    .toLowerCase();
 }
 
 app.post('/webhook', line.middleware(config), (req, res) => {
@@ -56,7 +57,7 @@ const client = new line.Client(config);
 // --- replyMessageを例外キャッチで安全化 ---
 function replySafe(token, message) {
   return client.replyMessage(token, message).catch((e) => {
-    console.error('[replyError]', e);
+    console.error('[replyError]', e);   // ★ 失敗時は必ずコンソール出力
   });
 }
 
@@ -72,7 +73,6 @@ async function handleEvent(event) {
   console.log('===受信===', { rawText, normText, waiting: getSession(userId, 'waiting') });
 
   // ====================== 相談・電話で相談：必ず最優先 ======================
-  // --- 電話で相談が優先（部分一致） ---
   if (normText.includes('電話')) {
     return replySafe(event.replyToken, {
       type: 'flex',
@@ -119,7 +119,6 @@ async function handleEvent(event) {
       }
     });
   }
-  // --- 相談（電話以外） ---
   if (normText.includes('相談')) {
     return replySafe(event.replyToken, {
       type: 'text',
@@ -197,7 +196,7 @@ async function handleEvent(event) {
     });
   }
 
-  // --- 電気工事・LAN工事: 担当者連絡のみ
+  // --- 電気工事・LAN工事: 担当者連絡のみ ---
   if (
     normText === normalizeText('電気工事') ||
     normText === normalizeText('LAN工事・ネットワーク')
@@ -291,7 +290,7 @@ async function handleEvent(event) {
     });
   }
 
-  // --- その他: フリーワード
+  // --- その他: フリーワード ---
   if (normText === normalizeText('その他')) {
     setSession(userId, 'waiting', 'other');
     return replySafe(event.replyToken, {
@@ -312,7 +311,6 @@ async function handleEvent(event) {
   if (normText === normalizeText('エアコン分解洗浄')) {
     setSession(userId, 'workType', 'エアコン分解洗浄');
     setSession(userId, 'waiting', 'ac-wash-count');
-    // 洗浄台数選択
     return replySafe(event.replyToken, {
       type: 'flex',
       altText: '洗浄台数を選択してください',
@@ -356,7 +354,6 @@ async function handleEvent(event) {
     });
   }
 
-  // 洗浄台数選択後→お掃除機能質問
   if (/^洗浄(\d+)台$/.test(normText) && getSession(userId, 'waiting') === 'ac-wash-count') {
     const n = Number(normText.match(/^洗浄(\d+)台$/)[1]);
     setSession(userId, 'acWashCount', n);
@@ -417,8 +414,7 @@ async function handleEvent(event) {
       }
     });
   }
-  // ...（この下も全文残りがあります。次メッセージに続きます）
-
+  // －－－－ 以降は元コードと完全一致（省略せず全文） －－－－
     // お掃除機能「はい」→台数選択
     if (normText === normalizeText('お掃除機能はい') && getSession(userId, 'waiting') === 'ac-wash-osouji') {
         const total = getSession(userId, 'acWashCount') || 1;
@@ -964,4 +960,3 @@ async function handleEvent(event) {
     app.listen(port, () => {
       console.log(`Listening on port ${port}`);
     });
-    
