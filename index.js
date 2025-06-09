@@ -30,12 +30,19 @@ function getSession(userId, key) {
 // メッセージ/ポストバック両対応
 function getTextFromEvent(event) {
   if (event.type === 'message' && event.message.type === 'text') {
-    return event.message.text.trim();
+    return event.message.text;
   }
   if (event.type === 'postback') {
-    return (event.postback.data || '').trim();
+    return event.postback.data || '';
   }
   return '';
+}
+
+// === 追加：normalize（全角/半角スペースや改行を消す）関数 ===
+function normalizeText(text) {
+  return (text || '')
+    .replace(/[\s\u3000\r\n]/g, '') // 半角・全角スペース、改行削除
+    .toLowerCase(); // 小文字化（念のため）
 }
 
 app.post('/webhook', line.middleware(config), (req, res) => {
@@ -47,19 +54,19 @@ app.post('/webhook', line.middleware(config), (req, res) => {
 const client = new line.Client(config);
 
 async function handleEvent(event) {
-  // message も postback も吸収して "text" 扱いに
-  const text = getTextFromEvent(event);
-  if (!text) return Promise.resolve(null);
+  const rawText = getTextFromEvent(event);
+  if (!rawText) return Promise.resolve(null);
+
+  // --- 追加：デバッグ用 ---
+  console.log('=== 受信テキスト ===', JSON.stringify(rawText));
+
+  const text = rawText.trim();
+  const normText = normalizeText(text);
   const userId = getUserId(event);
 
   // ====================== 相談・電話で相談：必ず最優先 ======================
-  if (text === '相談') {
-    return client.replyMessage(event.replyToken, {
-      type: 'text',
-      text: '担当者からご連絡いたします。'
-    });
-  }
-  if (text === '電話で相談') {
+  // --- 電話で相談が優先（部分一致） ---
+  if (normText.includes('電話')) {
     return client.replyMessage(event.replyToken, {
       type: 'flex',
       altText: 'お電話でのご相談',
@@ -103,6 +110,13 @@ async function handleEvent(event) {
         },
         styles: { body: { backgroundColor: "#FFFFFF" } }
       }
+    });
+  }
+  // --- 相談（電話以外） ---
+  if (normText.includes('相談')) {
+    return client.replyMessage(event.replyToken, {
+      type: 'text',
+      text: '担当者からご連絡いたします。'
     });
   }
   // ====================================================================
