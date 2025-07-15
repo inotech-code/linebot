@@ -869,10 +869,9 @@ async function handleEvent(event) {
       }
     
       // --- その他案内 ---
-      return replySafe(event.replyToken, {
-        type: 'text',
-        text: 'メニューからご要望をお選びください。'
-      });
+// 何も返さず 200 OK だけ応答する
+return Promise.resolve(null);
+
     }
     
     // --- 最終確認メッセージ生成 ---
